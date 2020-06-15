@@ -52,67 +52,64 @@ func testRuneQueue() {
 	fmt.Println("queue:", queue)
 }
 
+const (
+	initStateId          = 0
+	parseNumericStateId  = 1
+	parseOperatorStateId = 2
+	endStateId           = 99
+)
+
+var parserFsm = fsm.NewParserFsm(
+	map[int]fsm.ParserState{
+		// Init
+		initStateId: *fsm.NewParserState(false, fsm.NoOp, map[parser.TokenType]int{
+			parser.NumericToken: parseNumericStateId,
+		}),
+		// Parse Numeric
+		parseNumericStateId: *fsm.NewParserState(false,
+			func(s *fsm.StateParams) error {
+				token := s.Tokens.Dequeue()
+				f, err := strconv.ParseFloat(token.Value, 64)
+				if err != nil {
+					return err
+				}
+				n := common.ValueNode(f)
+				s.Cur.AddChild(&n)
+				return nil
+			},
+			map[parser.TokenType]int{
+				parser.EndToken:      endStateId,
+				parser.OperatorToken: parseOperatorStateId,
+			}),
+		// Parse Operator
+		parseOperatorStateId: *fsm.NewParserState(false,
+			func(s *fsm.StateParams) error {
+				token := s.Tokens.Dequeue()
+				var op common.Operation
+				switch token.Value {
+				case "+":
+					op = common.Addition
+				case "-":
+					op = common.Subtraction
+				case "/":
+					op = common.Division
+				case "*":
+					op = common.Multiplication
+				}
+				s.Cur.AddOperation(op)
+				return nil
+			},
+			map[parser.TokenType]int{
+				parser.NumericToken: parseNumericStateId,
+			}),
+		// End
+		endStateId: fsm.EndState,
+	},
+	initStateId,
+)
+
 func testParserFsm() {
-	initStateId := 0
-	parseNumericStateId := 1
-	parseOperatorStateId := 2
-	endStateId := 99
-
-	states := map[int]fsm.ParserState{}
-
-	stateInit := fsm.ParserState{
-		End:         false,
-		Func:        fsm.NoOp,
-		Transitions: map[parser.TokenType]int{},
-	}
-	stateInit.Transitions[parser.NumericToken] = parseNumericStateId
-
-	stateParseNum := fsm.ParserState{
-		End: false,
-		Func: func(s *fsm.StateParams) error {
-			token := s.Tokens.Dequeue()
-			f, err := strconv.ParseFloat(token.Value, 64)
-			if err != nil {
-				return err
-			}
-			n := common.ValueNode(f)
-			s.Cur.AddChild(&n)
-			return nil
-		},
-		Transitions: map[parser.TokenType]int{},
-	}
-	stateParseNum.Transitions[parser.EndToken] = endStateId
-	stateParseNum.Transitions[parser.OperatorToken] = parseOperatorStateId
-
-	stateParseOperator := fsm.ParserState{
-		End: false,
-		Func: func(s *fsm.StateParams) error {
-			token := s.Tokens.Dequeue()
-			var op common.Operation
-			switch token.Value {
-			case "+":
-				op = common.Addition
-			case "-":
-				op = common.Subtraction
-			case "/":
-				op = common.Division
-			case "*":
-				op = common.Multiplication
-			}
-			s.Cur.AddOperation(op)
-			return nil
-		},
-		Transitions: map[parser.TokenType]int{},
-	}
-	stateParseOperator.Transitions[parser.NumericToken] = parseNumericStateId
-
-	states[initStateId] = stateInit
-	states[parseNumericStateId] = stateParseNum
-	states[parseOperatorStateId] = stateParseOperator
-	states[endStateId] = fsm.EndState
-
-	fsm := fsm.NewParserFsm(states, initStateId)
-	eq, err := fsm.Parse("1+2.5-5*3")
+	eq, err := parserFsm.Parse("1+2.5-5*3")
 	if err != nil {
 		panic(err)
 	}
