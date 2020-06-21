@@ -68,7 +68,7 @@ var parserFsm = fsm.NewParserFsm(
 					return err
 				}
 				n := common.ValueNode(f)
-				state.Cur.AddChild(&n)
+				state.Equation.AddChild(&n)
 				return nil
 			},
 			map[parser.TokenType]int{
@@ -96,7 +96,7 @@ var parserFsm = fsm.NewParserFsm(
 					return fmt.Errorf("Unhandled Operation")
 					// fmt.Errorf("Undefined operation: %s", token.Value)
 				}
-				state.Cur.AddOperation(op)
+				state.Equation.AddOperation(op)
 				return nil
 			},
 			map[parser.TokenType]int{
@@ -138,7 +138,7 @@ var parserFsm2 = fsm.NewParserFsm(
 					return err
 				}
 				n := common.ValueNode(f)
-				state.Cur.AddChild(&n)
+				state.Equation.AddChild(&n)
 				return nil
 			},
 			map[parser.TokenType]int{
@@ -166,7 +166,7 @@ var parserFsm2 = fsm.NewParserFsm(
 				default:
 					return fmt.Errorf("Unhandled operation")
 				}
-				state.Cur.AddOperation(op)
+				state.Equation.AddOperation(op)
 				return nil
 			},
 			map[parser.TokenType]int{
@@ -184,16 +184,10 @@ var parserFsm2 = fsm.NewParserFsm(
 					if err := s.Enter(); err != nil {
 						return err
 					}
-					// state = s.Cur()
-					// eq := common.NewEquationNode()
-					// s.Stack.Push(s.Cur)
-					// s.Cur.AddChild(eq)
-					// s.Cur = eq
 				case ")":
 					if err := s.Exit(); err != nil {
 						return err
 					}
-					// s.Cur = s.Stack.Pop()
 				default:
 					return fmt.Errorf("Unhandled control")
 				}

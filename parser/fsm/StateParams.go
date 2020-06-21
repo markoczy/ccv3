@@ -6,13 +6,13 @@ import (
 )
 
 type StateParams struct {
-	Tokens *parser.TokenQueue
-	Cur    *common.EquationNode
+	Tokens   *parser.TokenQueue
+	Equation *common.EquationNode
 }
 
-func NewStateParams(tokens *parser.TokenQueue, eq *common.EquationNode) *StateParams {
+func NewStateParams(tokens *parser.TokenQueue, equation *common.EquationNode) *StateParams {
 	return &StateParams{
-		Tokens: tokens,
-		Cur:    eq,
+		Tokens:   tokens,
+		Equation: equation,
 	}
 }

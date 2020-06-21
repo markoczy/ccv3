@@ -38,7 +38,7 @@ func (s *CallStack) Enter() error {
 	}
 	tokens := s.Cur().Tokens
 	child := common.NewEquationNode()
-	s.Cur().Cur.AddChild(child)
+	s.Cur().Equation.AddChild(child)
 	*s = append(*s, NewStateParams(tokens, child))
 	return nil
 }

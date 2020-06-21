@@ -59,7 +59,7 @@ func (fsm *ParserFsm) Parse(s string) (*common.EquationNode, error) {
 		}
 	}
 
-	return fsm.Stack.Cur().Cur, nil
+	return fsm.Stack.Cur().Equation, nil
 }
 
 func (fsm *ParserFsm) formatParserError(reason string, token parser.Token) error {
