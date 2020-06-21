@@ -11,3 +11,7 @@ func (n *ValueNode) Value() (float64, error) {
 func (n *ValueNode) String() string {
 	return strconv.FormatFloat(float64(*n), 'f', -1, 64)
 }
+
+func (n *ValueNode) Type() NodeType {
+	return ValueNodeType
+}

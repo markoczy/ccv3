@@ -24,7 +24,6 @@ func (fsm *ParserFsm) Step() error {
 	}
 
 	state := fsm.Stack.Cur()
-	fmt.Println("State", state)
 	if state.Tokens.Len() == 0 {
 		// todo 'expected x,y or z'
 		return fmt.Errorf("No more tokens and not at end state")

@@ -96,14 +96,28 @@ func (n *EquationNode) String() string {
 	ret := strings.Builder{}
 	for i, v := range n.operations {
 		if i == 0 {
-			ret.WriteString(n.children[i].String())
+			writeNode(n.children[i], &ret)
 		}
 		ret.WriteString(string(v))
-		ret.WriteString(n.children[i+1].String())
+		writeNode(n.children[i+1], &ret)
 	}
 	return ret.String()
 }
 
+func (n *EquationNode) Type() NodeType {
+	return EquationNodeType
+}
+
 func NewEquationNode() *EquationNode {
 	return &EquationNode{}
+}
+
+func writeNode(node Node, sb *strings.Builder) {
+	if node.Type() == EquationNodeType {
+		sb.WriteRune('(')
+	}
+	sb.WriteString(node.String())
+	if node.Type() == EquationNodeType {
+		sb.WriteRune(')')
+	}
 }
