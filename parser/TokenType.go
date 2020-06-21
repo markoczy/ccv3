@@ -1,11 +1,11 @@
 package parser
 
-type TokenType int
+type TokenType string
 
 const (
-	NumericToken = TokenType(iota)
-	IdentifierToken
-	OperatorToken
-	ControlToken
-	EndToken
+	NumericToken    = TokenType("Number")
+	IdentifierToken = TokenType("Identifier")
+	OperatorToken   = TokenType("Operator")
+	ControlToken    = TokenType("Control")
+	EndToken        = TokenType("End")
 )

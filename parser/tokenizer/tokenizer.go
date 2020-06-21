@@ -21,7 +21,21 @@ func CreateToken(q *RuneQueue, tp parser.TokenType, begin int, eval func(rune) b
 	}
 
 	ret.Value = sb.String()
-	ret.End = begin + cnt
+	ret.End = begin + (cnt - 1)
+	return ret
+}
+
+func CreateSingleRuneToken(q *RuneQueue, tp parser.TokenType, begin int, eval func(rune) bool) parser.Token {
+	ret := parser.Token{
+		Type:  tp,
+		Begin: begin,
+	}
+
+	if eval(q.Peek()) {
+		ret.Value = string(q.Dequeue())
+	}
+
+	ret.End = begin
 	return ret
 }
 
@@ -41,13 +55,13 @@ func CreateTokens(s string) (parser.TokenQueue, error) {
 			token = CreateToken(&queue, parser.IdentifierToken, begin, parser.IsIdentifier)
 			ret.Enqueue(token)
 		case parser.IsOperator(r):
-			token = CreateToken(&queue, parser.OperatorToken, begin, parser.IsOperator)
+			token = CreateSingleRuneToken(&queue, parser.OperatorToken, begin, parser.IsOperator)
 			ret.Enqueue(token)
 		case parser.IsControl(r):
-			token = CreateToken(&queue, parser.ControlToken, begin, parser.IsControl)
+			token = CreateSingleRuneToken(&queue, parser.ControlToken, begin, parser.IsControl)
 			ret.Enqueue(token)
 		default:
-			return nil, fmt.Errorf("Unhandled token: %v", r)
+			return nil, fmt.Errorf("Unhandled char '%s' at position %d", string(r), begin)
 		}
 	}
 	return ret, nil

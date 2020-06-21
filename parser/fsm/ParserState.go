@@ -4,7 +4,7 @@ import "github.com/markoczy/ccv3/parser"
 
 type ParserState struct {
 	End         bool
-	Func        func(*StateParams) error
+	Func        func(*CallStack) error
 	Transitions map[parser.TokenType]int
 }
 
@@ -14,7 +14,7 @@ var EndState = ParserState{
 	Transitions: map[parser.TokenType]int{},
 }
 
-func NewParserState(end bool, fn func(*StateParams) error, transitions map[parser.TokenType]int) *ParserState {
+func NewParserState(end bool, fn func(*CallStack) error, transitions map[parser.TokenType]int) *ParserState {
 	return &ParserState{
 		End:         end,
 		Func:        fn,

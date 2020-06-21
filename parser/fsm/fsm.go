@@ -1,5 +1,5 @@
 package fsm
 
-func NoOp(*StateParams) error {
+func NoOp(*CallStack) error {
 	return nil
 }

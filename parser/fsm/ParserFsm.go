@@ -4,13 +4,14 @@ import (
 	"fmt"
 
 	"github.com/markoczy/ccv3/common"
+	"github.com/markoczy/ccv3/parser"
 	"github.com/markoczy/ccv3/parser/tokenizer"
 )
 
 type ParserFsm struct {
 	States map[int]ParserState
 	State  ParserState
-	Params StateParams
+	Stack  *CallStack
 }
 
 func (fsm *ParserFsm) End() bool {
@@ -22,19 +23,23 @@ func (fsm *ParserFsm) Step() error {
 		return nil
 	}
 
-	if fsm.Params.Tokens.Len() == 0 {
+	state := fsm.Stack.Cur()
+	fmt.Println("State", state)
+	if state.Tokens.Len() == 0 {
+		// todo 'expected x,y or z'
 		return fmt.Errorf("No more tokens and not at end state")
 	}
 
-	err := fsm.State.Func(&fsm.Params)
+	token := state.Tokens.Peek()
+	err := fsm.State.Func(fsm.Stack)
 	if err != nil {
-		return err
+		return fsm.formatParserError(err.Error(), token)
 	}
 
-	token := fsm.Params.Tokens.Peek()
+	token = state.Tokens.Peek()
 	next, found := fsm.State.Transitions[token.Type]
 	if !found {
-		return fmt.Errorf("Undefined successor state for token: %v", token)
+		return fsm.formatParserError("Undefined successor state", token)
 	}
 
 	fsm.State = fsm.States[next]
@@ -47,12 +52,7 @@ func (fsm *ParserFsm) Parse(s string) (*common.EquationNode, error) {
 		return nil, err
 	}
 
-	fsm.Params = StateParams{
-		Tokens: tokens,
-		Cur:    common.EquationNode{},
-		Stack:  []common.EquationNode{},
-	}
-
+	fsm.Stack = &CallStack{NewStateParams(&tokens, common.NewEquationNode())}
 	for !fsm.End() {
 		err = fsm.Step()
 		if err != nil {
@@ -60,13 +60,21 @@ func (fsm *ParserFsm) Parse(s string) (*common.EquationNode, error) {
 		}
 	}
 
-	return &fsm.Params.Cur, nil
+	return fsm.Stack.Cur().Cur, nil
+}
+
+func (fsm *ParserFsm) formatParserError(reason string, token parser.Token) error {
+	if token.Begin == token.End {
+		return fmt.Errorf("Parser Error: %s (token '%s', position %d)", reason, token.Value, token.Begin)
+
+	}
+	return fmt.Errorf("Parser Error: %s (token '%s', position %d-%d)", reason, token.Value, token.Begin, token.End)
 }
 
 func NewParserFsm(states map[int]ParserState, start int) *ParserFsm {
 	return &ParserFsm{
 		States: states,
 		State:  states[start],
-		Params: StateParams{},
+		Stack:  &CallStack{&StateParams{}},
 	}
 }

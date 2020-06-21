@@ -7,4 +7,5 @@ const (
 	Subtraction    = Operation("-")
 	Multiplication = Operation("*")
 	Division       = Operation("/")
+	Exponentiation = Operation("^")
 )

@@ -31,7 +31,7 @@ func testCreateTokens() {
 	}
 
 	for _, v := range tokens {
-		fmt.Printf("Token: begin=%d, end=%d, type=%d, val=%s\n", v.Begin, v.End, v.Type, v.Value)
+		fmt.Printf("Token: begin=%d, end=%d, type=%s, val=%s\n", v.Begin, v.End, v.Type, v.Value)
 	}
 }
 
@@ -52,13 +52,6 @@ func testRuneQueue() {
 	fmt.Println("queue:", queue)
 }
 
-const (
-	initStateId          = 0
-	parseNumericStateId  = 1
-	parseOperatorStateId = 2
-	endStateId           = 99
-)
-
 var parserFsm = fsm.NewParserFsm(
 	map[int]fsm.ParserState{
 		// Init
@@ -67,14 +60,15 @@ var parserFsm = fsm.NewParserFsm(
 		}),
 		// Parse Numeric
 		parseNumericStateId: *fsm.NewParserState(false,
-			func(s *fsm.StateParams) error {
-				token := s.Tokens.Dequeue()
+			func(s *fsm.CallStack) error {
+				state := s.Cur()
+				token := state.Tokens.Dequeue()
 				f, err := strconv.ParseFloat(token.Value, 64)
 				if err != nil {
 					return err
 				}
 				n := common.ValueNode(f)
-				s.Cur.AddChild(&n)
+				state.Cur.AddChild(&n)
 				return nil
 			},
 			map[parser.TokenType]int{
@@ -83,8 +77,9 @@ var parserFsm = fsm.NewParserFsm(
 			}),
 		// Parse Operator
 		parseOperatorStateId: *fsm.NewParserState(false,
-			func(s *fsm.StateParams) error {
-				token := s.Tokens.Dequeue()
+			func(s *fsm.CallStack) error {
+				state := s.Cur()
+				token := state.Tokens.Dequeue()
 				var op common.Operation
 				switch token.Value {
 				case "+":
@@ -95,8 +90,13 @@ var parserFsm = fsm.NewParserFsm(
 					op = common.Division
 				case "*":
 					op = common.Multiplication
+				case "^":
+					op = common.Exponentiation
+				default:
+					return fmt.Errorf("Unhandled Operation")
+					// fmt.Errorf("Undefined operation: %s", token.Value)
 				}
-				s.Cur.AddOperation(op)
+				state.Cur.AddOperation(op)
 				return nil
 			},
 			map[parser.TokenType]int{
@@ -108,11 +108,119 @@ var parserFsm = fsm.NewParserFsm(
 	initStateId,
 )
 
+const (
+	// basic
+	initStateId          = 0
+	parseNumericStateId  = 1
+	parseOperatorStateId = 2
+	endStateId           = 99
+	// advanced
+	parseControlStateId       = 10
+	parseUnaryOperatorStateId = 11
+)
+
+var parserFsm2 = fsm.NewParserFsm(
+	map[int]fsm.ParserState{
+		// Init
+		initStateId: *fsm.NewParserState(false,
+			fsm.NoOp,
+			map[parser.TokenType]int{
+				parser.NumericToken: parseNumericStateId,
+				parser.ControlToken: parseControlStateId,
+			}),
+		// Parse Numeric
+		parseNumericStateId: *fsm.NewParserState(false,
+			func(s *fsm.CallStack) error {
+				state := s.Cur()
+				token := state.Tokens.Dequeue()
+				f, err := strconv.ParseFloat(token.Value, 64)
+				if err != nil {
+					return err
+				}
+				n := common.ValueNode(f)
+				state.Cur.AddChild(&n)
+				return nil
+			},
+			map[parser.TokenType]int{
+				parser.EndToken:      endStateId,
+				parser.OperatorToken: parseOperatorStateId,
+				parser.ControlToken:  parseControlStateId,
+			}),
+		// Parse Operator
+		parseOperatorStateId: *fsm.NewParserState(false,
+			func(s *fsm.CallStack) error {
+				state := s.Cur()
+				token := state.Tokens.Dequeue()
+				var op common.Operation
+				switch token.Value {
+				case "+":
+					op = common.Addition
+				case "-":
+					op = common.Subtraction
+				case "/":
+					op = common.Division
+				case "*":
+					op = common.Multiplication
+				case "^":
+					op = common.Exponentiation
+				default:
+					return fmt.Errorf("Unhandled operation")
+				}
+				state.Cur.AddOperation(op)
+				return nil
+			},
+			map[parser.TokenType]int{
+				parser.NumericToken: parseNumericStateId,
+				parser.ControlToken: parseControlStateId,
+			}),
+		// Parse Control
+		parseControlStateId: *fsm.NewParserState(false,
+			func(s *fsm.CallStack) error {
+				state := s.Cur()
+				token := state.Tokens.Dequeue()
+
+				switch token.Value {
+				case "(":
+					if err := s.Enter(); err != nil {
+						return err
+					}
+					// state = s.Cur()
+					// eq := common.NewEquationNode()
+					// s.Stack.Push(s.Cur)
+					// s.Cur.AddChild(eq)
+					// s.Cur = eq
+				case ")":
+					if err := s.Exit(); err != nil {
+						return err
+					}
+					// s.Cur = s.Stack.Pop()
+				default:
+					return fmt.Errorf("Unhandled control")
+				}
+				return nil
+			},
+			map[parser.TokenType]int{
+				parser.NumericToken:  parseNumericStateId,
+				parser.OperatorToken: parseOperatorStateId,
+				parser.EndToken:      endStateId,
+			}),
+		// End
+		endStateId: fsm.EndState,
+	},
+	initStateId,
+)
+
 func testParserFsm() {
-	eq, err := parserFsm.Parse("1+2.5-5*3")
+	eq, err := parserFsm2.Parse("1+2.5^(5-2)*3")
+	// eq, err := parserFsm2.Parse("1+1")
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println("*** Equation:", eq.String())
+	res, err := eq.Value()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("*** Value:", res)
 }
