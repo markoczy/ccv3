@@ -6,4 +6,5 @@ const (
 	ValueNodeType    = "Value"
 	EquationNodeType = "Equation"
 	NegationNodeType = "Negation"
+	FunctionNodeType = "Function"
 )

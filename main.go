@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"strconv"
 
 	"github.com/markoczy/ccv3/common"
@@ -21,7 +22,8 @@ func main() {
 	// testRuneQueue()
 	// testCreateToken()
 	// testCreateTokens()
-	testParserFsm()
+	// testParserFsm()
+	testFunction()
 }
 
 func testCreateToken() {
@@ -249,4 +251,12 @@ func testParserFsm() {
 		panic(err)
 	}
 	fmt.Println("*** Value:", res)
+}
+
+func testFunction() {
+	fn := common.NewDefaultFunction("sin", 1, func(x ...float64) float64 {
+		return math.Sin(x[0])
+	})
+	x := common.ValueNode(1)
+	fmt.Println(fn.AsNode(&x))
 }
