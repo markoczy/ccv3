@@ -9,8 +9,8 @@ import (
 )
 
 type ParserFsm struct {
-	States map[int]ParserState
-	State  ParserState
+	States map[int]*ParserState
+	State  *ParserState
 	Stack  *CallStack
 }
 
@@ -31,12 +31,12 @@ func (fsm *ParserFsm) Step() error {
 	token := state.Tokens.Peek()
 	err := fsm.State.Func(fsm.Stack)
 	if err != nil {
-		return fsm.formatParserError(err.Error(), token)
+		return fsm.formatParserError(err, token)
 	}
 
 	next, err := fsm.State.Transition(fsm.Stack)
 	if err != nil {
-		return fsm.formatParserError(err.Error(), state.Tokens.Peek())
+		return fsm.formatParserError(err, state.Tokens.Peek())
 	}
 	fsm.State = fsm.States[next]
 	return nil
@@ -59,15 +59,15 @@ func (fsm *ParserFsm) Parse(s string) (*common.EquationNode, error) {
 	return fsm.Stack.Cur().Equation, nil
 }
 
-func (fsm *ParserFsm) formatParserError(reason string, token parser.Token) error {
+func (fsm *ParserFsm) formatParserError(err error, token *parser.Token) error {
 	if token.Begin == token.End {
-		return fmt.Errorf("Parser Error: %s (token '%s', position %d)", reason, token.Value, token.Begin)
+		return fmt.Errorf("Parser Error: %w (token '%s', position %d)", err, token.Value, token.Begin)
 
 	}
-	return fmt.Errorf("Parser Error: %s (token '%s', position %d-%d)", reason, token.Value, token.Begin, token.End)
+	return fmt.Errorf("Parser Error: %w (token '%s', position %d-%d)", err, token.Value, token.Begin, token.End)
 }
 
-func NewParserFsm(states map[int]ParserState, start int) *ParserFsm {
+func NewParserFsm(states map[int]*ParserState, start int) *ParserFsm {
 	return &ParserFsm{
 		States: states,
 		State:  states[start],

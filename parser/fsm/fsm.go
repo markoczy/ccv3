@@ -6,6 +6,12 @@ import (
 	"github.com/markoczy/ccv3/parser"
 )
 
+var EndState = &ParserState{
+	End:        true,
+	Func:       NoOp,
+	Transition: NoTransition,
+}
+
 func NoOp(*CallStack) error {
 	return nil
 }

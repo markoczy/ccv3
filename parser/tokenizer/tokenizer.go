@@ -43,23 +43,23 @@ func CreateTokens(s string) (parser.TokenQueue, error) {
 	queue := RuneQueue(s)
 	ret := parser.TokenQueue{}
 	initialLength := queue.Len()
-	var token parser.Token
 	for queue.Len() > 0 {
 		begin := initialLength - queue.Len()
 		r := queue.Peek()
+		var token parser.Token
 		switch {
 		case parser.IsNumeric(r):
 			token = CreateToken(&queue, parser.NumericToken, begin, parser.IsNumeric)
-			ret.Enqueue(token)
+			ret.Enqueue(&token)
 		case parser.IsIdentifier(r):
 			token = CreateToken(&queue, parser.IdentifierToken, begin, parser.IsIdentifier)
-			ret.Enqueue(token)
+			ret.Enqueue(&token)
 		case parser.IsOperator(r):
 			token = CreateSingleRuneToken(&queue, parser.OperatorToken, begin, parser.IsOperator)
-			ret.Enqueue(token)
+			ret.Enqueue(&token)
 		case parser.IsControl(r):
 			token = CreateSingleRuneToken(&queue, parser.ControlToken, begin, parser.IsControl)
-			ret.Enqueue(token)
+			ret.Enqueue(&token)
 		default:
 			return nil, fmt.Errorf("Unhandled char '%s' at position %d", string(r), begin)
 		}
