@@ -23,12 +23,12 @@ func (fsm *ParserFsm) Step() error {
 		return nil
 	}
 
-	state := fsm.Stack.Cur()
-	if state.Tokens.Len() == 0 {
+	stack := fsm.Stack
+	if stack.Tokens.Len() == 0 {
 		return fmt.Errorf("No more tokens and not at end state")
 	}
 
-	token := state.Tokens.Peek()
+	token := stack.Tokens.Peek()
 	err := fsm.State.Func(fsm.Stack)
 	if err != nil {
 		return fsm.formatParserError(err, token)
@@ -36,7 +36,7 @@ func (fsm *ParserFsm) Step() error {
 
 	next, err := fsm.State.Transition(fsm.Stack)
 	if err != nil {
-		return fsm.formatParserError(err, state.Tokens.Peek())
+		return fsm.formatParserError(err, stack.Tokens.Peek())
 	}
 	fsm.State = fsm.States[next]
 	return nil
@@ -48,7 +48,9 @@ func (fsm *ParserFsm) Parse(s string) (*common.EquationNode, error) {
 		return nil, err
 	}
 
-	fsm.Stack = &CallStack{NewStateParams(&tokens, common.NewEquationNode())}
+	fsm.Stack = NewCallStack(&tokens)
+
+	// &CallStack{Params:NewStateParams(&tokens, common.NewEquationNode())}
 	for !fsm.End() {
 		err = fsm.Step()
 		if err != nil {
@@ -71,6 +73,6 @@ func NewParserFsm(states map[int]*ParserState, start int) *ParserFsm {
 	return &ParserFsm{
 		States: states,
 		State:  states[start],
-		Stack:  &CallStack{&StateParams{}},
+		Stack:  &CallStack{Params: []*StateParams{}},
 	}
 }

@@ -70,7 +70,7 @@ var parserFsm = fsm.NewParserFsm(
 		parseNumericStateId: fsm.NewParserState(false,
 			func(s *fsm.CallStack) error {
 				state := s.Cur()
-				token := state.Tokens.Dequeue()
+				token := s.Tokens.Dequeue()
 				f, err := strconv.ParseFloat(token.Value, 64)
 				if err != nil {
 					return err
@@ -87,7 +87,7 @@ var parserFsm = fsm.NewParserFsm(
 		parseOperatorStateId: fsm.NewParserState(false,
 			func(s *fsm.CallStack) error {
 				state := s.Cur()
-				token := state.Tokens.Dequeue()
+				token := s.Tokens.Dequeue()
 				var op common.Operation
 				switch token.Value {
 				case "+":
@@ -141,7 +141,7 @@ var parserFsm2 = fsm.NewParserFsm(
 		parseNumericStateId: fsm.NewParserState(false,
 			func(s *fsm.CallStack) error {
 				state := s.Cur()
-				token := state.Tokens.Dequeue()
+				token := s.Tokens.Dequeue()
 				f, err := strconv.ParseFloat(token.Value, 64)
 				if err != nil {
 					return err
@@ -163,7 +163,7 @@ var parserFsm2 = fsm.NewParserFsm(
 		parseOperatorStateId: fsm.NewParserState(false,
 			func(s *fsm.CallStack) error {
 				state := s.Cur()
-				token := state.Tokens.Dequeue()
+				token := s.Tokens.Dequeue()
 				var op common.Operation
 				switch token.Value {
 				case "+":
@@ -190,8 +190,7 @@ var parserFsm2 = fsm.NewParserFsm(
 		// Parse Control
 		parseControlStateId: fsm.NewParserState(false,
 			func(s *fsm.CallStack) error {
-				state := s.Cur()
-				token := state.Tokens.Dequeue()
+				token := s.Tokens.Dequeue()
 
 				switch token.Value {
 				case "(":
@@ -216,7 +215,7 @@ var parserFsm2 = fsm.NewParserFsm(
 		parseUnaryOperatorStateId: fsm.NewParserState(false,
 			func(s *fsm.CallStack) error {
 				state := s.Cur()
-				token := state.Tokens.Dequeue()
+				token := s.Tokens.Dequeue()
 
 				switch token.Value {
 				case "-":

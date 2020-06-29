@@ -22,7 +22,7 @@ func NoTransition(s *CallStack) (int, error) {
 
 func TokenMapTransition(transitions map[parser.TokenType]int) func(s *CallStack) (int, error) {
 	return func(s *CallStack) (int, error) {
-		token := s.Cur().Tokens.Peek()
+		token := s.Tokens.Peek()
 		next, found := transitions[token.Type]
 		if !found {
 			return 0, fmt.Errorf("Undefined successor state")
