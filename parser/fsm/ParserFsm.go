@@ -25,7 +25,6 @@ func (fsm *ParserFsm) Step() error {
 
 	state := fsm.Stack.Cur()
 	if state.Tokens.Len() == 0 {
-		// todo 'expected x,y or z'
 		return fmt.Errorf("No more tokens and not at end state")
 	}
 
@@ -35,12 +34,10 @@ func (fsm *ParserFsm) Step() error {
 		return fsm.formatParserError(err.Error(), token)
 	}
 
-	token = state.Tokens.Peek()
-	next, found := fsm.State.Transitions[token.Type]
-	if !found {
-		return fsm.formatParserError("Undefined successor state", token)
+	next, err := fsm.State.Transition(fsm.Stack)
+	if err != nil {
+		return fsm.formatParserError(err.Error(), state.Tokens.Peek())
 	}
-
 	fsm.State = fsm.States[next]
 	return nil
 }

@@ -1,23 +1,21 @@
 package fsm
 
-import "github.com/markoczy/ccv3/parser"
-
 type ParserState struct {
-	End         bool
-	Func        func(*CallStack) error
-	Transitions map[parser.TokenType]int
+	End        bool
+	Func       func(*CallStack) error
+	Transition func(*CallStack) (int, error)
 }
 
 var EndState = ParserState{
-	End:         true,
-	Func:        NoOp,
-	Transitions: map[parser.TokenType]int{},
+	End:        true,
+	Func:       NoOp,
+	Transition: NoTransition,
 }
 
-func NewParserState(end bool, fn func(*CallStack) error, transitions map[parser.TokenType]int) *ParserState {
+func NewParserState(end bool, exec func(*CallStack) error, transition func(*CallStack) (int, error)) *ParserState {
 	return &ParserState{
-		End:         end,
-		Func:        fn,
-		Transitions: transitions,
+		End:        end,
+		Func:       exec,
+		Transition: transition,
 	}
 }

@@ -55,9 +55,11 @@ func testRuneQueue() {
 var parserFsm = fsm.NewParserFsm(
 	map[int]fsm.ParserState{
 		// Init
-		initStateId: *fsm.NewParserState(false, fsm.NoOp, map[parser.TokenType]int{
-			parser.NumericToken: parseNumericStateId,
-		}),
+		initStateId: *fsm.NewParserState(false,
+			fsm.NoOp,
+			fsm.TokenMapTransition(map[parser.TokenType]int{
+				parser.NumericToken: parseNumericStateId,
+			})),
 		// Parse Numeric
 		parseNumericStateId: *fsm.NewParserState(false,
 			func(s *fsm.CallStack) error {
@@ -71,10 +73,10 @@ var parserFsm = fsm.NewParserFsm(
 				state.Equation.AddChild(&n)
 				return nil
 			},
-			map[parser.TokenType]int{
+			fsm.TokenMapTransition(map[parser.TokenType]int{
 				parser.EndToken:      endStateId,
 				parser.OperatorToken: parseOperatorStateId,
-			}),
+			})),
 		// Parse Operator
 		parseOperatorStateId: *fsm.NewParserState(false,
 			func(s *fsm.CallStack) error {
@@ -99,9 +101,9 @@ var parserFsm = fsm.NewParserFsm(
 				state.Equation.AddOperation(op)
 				return nil
 			},
-			map[parser.TokenType]int{
+			fsm.TokenMapTransition(map[parser.TokenType]int{
 				parser.NumericToken: parseNumericStateId,
-			}),
+			})),
 		// End
 		endStateId: fsm.EndState,
 	},
@@ -124,11 +126,11 @@ var parserFsm2 = fsm.NewParserFsm(
 		// Init
 		initStateId: *fsm.NewParserState(false,
 			fsm.NoOp,
-			map[parser.TokenType]int{
+			fsm.TokenMapTransition(map[parser.TokenType]int{
 				parser.NumericToken:  parseNumericStateId,
 				parser.ControlToken:  parseControlStateId,
 				parser.OperatorToken: parseUnaryOperatorStateId,
-			}),
+			})),
 		// Parse Numeric
 		parseNumericStateId: *fsm.NewParserState(false,
 			func(s *fsm.CallStack) error {
@@ -146,11 +148,11 @@ var parserFsm2 = fsm.NewParserFsm(
 				state.Equation.AddChild(&n)
 				return nil
 			},
-			map[parser.TokenType]int{
+			fsm.TokenMapTransition(map[parser.TokenType]int{
 				parser.EndToken:      endStateId,
 				parser.OperatorToken: parseOperatorStateId,
 				parser.ControlToken:  parseControlStateId,
-			}),
+			})),
 		// Parse Operator
 		parseOperatorStateId: *fsm.NewParserState(false,
 			func(s *fsm.CallStack) error {
@@ -174,11 +176,11 @@ var parserFsm2 = fsm.NewParserFsm(
 				state.Equation.AddOperation(op)
 				return nil
 			},
-			map[parser.TokenType]int{
+			fsm.TokenMapTransition(map[parser.TokenType]int{
 				parser.NumericToken:  parseNumericStateId,
 				parser.ControlToken:  parseControlStateId,
 				parser.OperatorToken: parseUnaryOperatorStateId,
-			}),
+			})),
 		// Parse Control
 		parseControlStateId: *fsm.NewParserState(false,
 			func(s *fsm.CallStack) error {
@@ -199,12 +201,12 @@ var parserFsm2 = fsm.NewParserFsm(
 				}
 				return nil
 			},
-			map[parser.TokenType]int{
+			fsm.TokenMapTransition(map[parser.TokenType]int{
 				parser.NumericToken:  parseNumericStateId,
 				parser.OperatorToken: parseOperatorStateId,
 				parser.EndToken:      endStateId,
 				parser.ControlToken:  parseControlStateId,
-			}),
+			})),
 		parseUnaryOperatorStateId: *fsm.NewParserState(false,
 			func(s *fsm.CallStack) error {
 				state := s.Cur()
@@ -218,10 +220,10 @@ var parserFsm2 = fsm.NewParserFsm(
 				}
 				return nil
 			},
-			map[parser.TokenType]int{
+			fsm.TokenMapTransition(map[parser.TokenType]int{
 				parser.NumericToken: parseNumericStateId,
 				parser.ControlToken: parseControlStateId,
-			}),
+			})),
 		// End
 		endStateId: fsm.EndState,
 	},
