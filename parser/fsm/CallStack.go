@@ -37,9 +37,18 @@ func (s *CallStack) Enter() error {
 		return fmt.Errorf("Cannot call Enter when stack is empty")
 	}
 	tokens := s.Cur().Tokens
-	child := common.NewEquationNode()
+	var child common.Node
+	eq := common.NewEquationNode()
+	if s.Cur().Negate {
+		s.Cur().Negate = false
+		child = &common.NegationNode{
+			Val: eq,
+		}
+	} else {
+		child = eq
+	}
 	s.Cur().Equation.AddChild(child)
-	*s = append(*s, NewStateParams(tokens, child))
+	*s = append(*s, NewStateParams(tokens, eq))
 	return nil
 }
 

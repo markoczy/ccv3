@@ -125,8 +125,9 @@ var parserFsm2 = fsm.NewParserFsm(
 		initStateId: *fsm.NewParserState(false,
 			fsm.NoOp,
 			map[parser.TokenType]int{
-				parser.NumericToken: parseNumericStateId,
-				parser.ControlToken: parseControlStateId,
+				parser.NumericToken:  parseNumericStateId,
+				parser.ControlToken:  parseControlStateId,
+				parser.OperatorToken: parseUnaryOperatorStateId,
 			}),
 		// Parse Numeric
 		parseNumericStateId: *fsm.NewParserState(false,
@@ -136,6 +137,10 @@ var parserFsm2 = fsm.NewParserFsm(
 				f, err := strconv.ParseFloat(token.Value, 64)
 				if err != nil {
 					return err
+				}
+				if state.Negate {
+					state.Negate = false
+					f = -f
 				}
 				n := common.ValueNode(f)
 				state.Equation.AddChild(&n)
@@ -170,8 +175,9 @@ var parserFsm2 = fsm.NewParserFsm(
 				return nil
 			},
 			map[parser.TokenType]int{
-				parser.NumericToken: parseNumericStateId,
-				parser.ControlToken: parseControlStateId,
+				parser.NumericToken:  parseNumericStateId,
+				parser.ControlToken:  parseControlStateId,
+				parser.OperatorToken: parseUnaryOperatorStateId,
 			}),
 		// Parse Control
 		parseControlStateId: *fsm.NewParserState(false,
@@ -197,6 +203,24 @@ var parserFsm2 = fsm.NewParserFsm(
 				parser.NumericToken:  parseNumericStateId,
 				parser.OperatorToken: parseOperatorStateId,
 				parser.EndToken:      endStateId,
+				parser.ControlToken:  parseControlStateId,
+			}),
+		parseUnaryOperatorStateId: *fsm.NewParserState(false,
+			func(s *fsm.CallStack) error {
+				state := s.Cur()
+				token := state.Tokens.Dequeue()
+
+				switch token.Value {
+				case "-":
+					state.Negate = !state.Negate
+				default:
+					return fmt.Errorf("Unhandled unary operator")
+				}
+				return nil
+			},
+			map[parser.TokenType]int{
+				parser.NumericToken: parseNumericStateId,
+				parser.ControlToken: parseControlStateId,
 			}),
 		// End
 		endStateId: fsm.EndState,
@@ -205,7 +229,8 @@ var parserFsm2 = fsm.NewParserFsm(
 )
 
 func testParserFsm() {
-	eq, err := parserFsm2.Parse("1+2.5^(5-2)*3")
+	// eq, err := parserFsm2.Parse("1+-2.5^(5-2)*3")
+	eq, err := parserFsm2.Parse("1+-(2.5^(5-2))*3")
 	// eq, err := parserFsm2.Parse("1+1")
 	if err != nil {
 		panic(err)
