@@ -1,7 +1,5 @@
 package common
 
-import "fmt"
-
 type NodeStack []*EquationNode
 
 func (s *NodeStack) Len() int {
@@ -23,10 +21,7 @@ func (s *NodeStack) Pop() *EquationNode {
 	if len(*s) == 0 {
 		return nil
 	}
-	fmt.Println("1")
 	ret := (*s)[len(*s)-1]
-	fmt.Println("2")
 	*s = (*s)[:len(*s)-1]
-	fmt.Println("3")
 	return ret
 }

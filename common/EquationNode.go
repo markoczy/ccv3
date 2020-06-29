@@ -1,10 +1,9 @@
 package common
 
 import (
+	"log"
 	"math"
 	"strings"
-
-	"golang.org/x/exp/errors/fmt"
 )
 
 type EquationNode struct {
@@ -63,7 +62,7 @@ func (n *EquationNode) solveOperation(idx int) error {
 	}
 	op := n.operations[idx]
 
-	fmt.Printf("Solving: %f %s %f\n", left, op, right)
+	log.Printf("Solving: %f %s %f\n", left, op, right)
 
 	var res ValueNode
 	switch op {
@@ -79,16 +78,16 @@ func (n *EquationNode) solveOperation(idx int) error {
 		res = ValueNode(math.Pow(left, right))
 	}
 
-	fmt.Printf("Result: %f %s %f = %f\n", left, op, right, float64(res))
+	log.Printf("Result: %f %s %f = %f\n", left, op, right, float64(res))
 
-	fmt.Println("Operations before:", len(n.operations))
+	log.Println("Operations before:", len(n.operations))
 	n.operations = append(n.operations[:idx], n.operations[idx+1:]...)
-	fmt.Println("Operations after:", len(n.operations))
-	fmt.Println("Children before:", len(n.children))
+	log.Println("Operations after:", len(n.operations))
+	log.Println("Children before:", len(n.children))
 	rest := n.children[idx+2:]
 	n.children = append(n.children[:idx], &res)
 	n.children = append(n.children, rest...)
-	fmt.Println("Children after:", len(n.children))
+	log.Println("Children after:", len(n.children))
 	return nil
 }
 

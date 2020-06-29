@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/markoczy/ccv3/common"
@@ -11,6 +12,11 @@ import (
 )
 
 func main() {
+	// Disable log
+	//log.SetOutput(ioutil.Discard)
+	log.SetFlags(log.Lshortfile)
+	log.SetPrefix("[DEBUG] ")
+
 	fmt.Println("Test", '0', '9')
 	// testRuneQueue()
 	// testCreateToken()
