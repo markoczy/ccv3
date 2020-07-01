@@ -107,6 +107,19 @@ func (n *EquationNode) Type() NodeType {
 	return EquationNodeType
 }
 
+func (n *EquationNode) Clone() Node {
+	children := make([]Node, len(n.children))
+	for i := range n.children {
+		children[i] = n.children[i].Clone()
+	}
+	operations := make([]Operation, len(n.operations))
+	copy(operations, n.operations)
+	return &EquationNode{
+		children:   children,
+		operations: operations,
+	}
+}
+
 func NewEquationNode() *EquationNode {
 	return &EquationNode{}
 }

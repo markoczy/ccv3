@@ -16,3 +16,13 @@ func (n *NegationNode) String() string {
 func (n *NegationNode) Type() NodeType {
 	return NegationNodeType
 }
+
+func (n *NegationNode) Clone() Node {
+	return NewNegationNode(n.Val.Clone())
+}
+
+func NewNegationNode(val Node) *NegationNode {
+	return &NegationNode{
+		Val: val,
+	}
+}

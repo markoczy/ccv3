@@ -15,3 +15,13 @@ func (n *ValueNode) String() string {
 func (n *ValueNode) Type() NodeType {
 	return ValueNodeType
 }
+
+func (n *ValueNode) Clone() Node {
+	val := float64(*n)
+	return NewValueNode(val)
+}
+
+func NewValueNode(val float64) *ValueNode {
+	ret := ValueNode(val)
+	return &ret
+}
