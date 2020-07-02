@@ -7,4 +7,5 @@ const (
 	EquationNodeType = "Equation"
 	NegationNodeType = "Negation"
 	FunctionNodeType = "Function"
+	ParamnNodeType   = "Parameter"
 )
