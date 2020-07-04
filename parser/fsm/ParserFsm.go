@@ -42,13 +42,13 @@ func (fsm *ParserFsm) Step() error {
 	return nil
 }
 
-func (fsm *ParserFsm) Parse(s string) (*common.EquationNode, error) {
+func (fsm *ParserFsm) Parse(s string, functionMap *common.FunctionMap) (*common.EquationNode, error) {
 	tokens, err := tokenizer.CreateTokens(s)
 	if err != nil {
 		return nil, err
 	}
 
-	fsm.Stack = NewCallStack(&tokens)
+	fsm.Stack = NewCallStack(&tokens, functionMap)
 
 	// &CallStack{Params:NewStateParams(&tokens, common.NewEquationNode())}
 	for !fsm.End() {
@@ -73,6 +73,5 @@ func NewParserFsm(states map[int]*ParserState, start int) *ParserFsm {
 	return &ParserFsm{
 		States: states,
 		State:  states[start],
-		Stack:  &CallStack{Params: []*StateParams{}},
 	}
 }

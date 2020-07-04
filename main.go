@@ -239,7 +239,7 @@ var parserFsm2 = fsm.NewParserFsm(
 
 func testParserFsm() {
 	// eq, err := parserFsm2.Parse("1+-2.5^(5-2)*3")
-	eq, err := parserFsm2.Parse("1+-(2.5^(5-2))*3")
+	eq, err := parserFsm2.Parse("1+-(2.5^(5-2))*3", common.NewFunctionMap(nil))
 	// eq, err := parserFsm2.Parse("1+1")
 	if err != nil {
 		panic(err)

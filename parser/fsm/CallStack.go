@@ -9,8 +9,9 @@ import (
 )
 
 type CallStack struct {
-	Params []*StateParams
-	Tokens *parser.TokenQueue
+	Params    []*StateParams
+	Tokens    *parser.TokenQueue
+	Functions *common.FunctionMap
 }
 
 // type CallStack []*StateParams
@@ -67,11 +68,12 @@ func (s *CallStack) Exit() error {
 	return nil
 }
 
-func NewCallStack(tokens *parser.TokenQueue) *CallStack {
+func NewCallStack(tokens *parser.TokenQueue, functions *common.FunctionMap) *CallStack {
 	return &CallStack{
 		Params: []*StateParams{
 			NewStateParams(common.NewEquationNode()),
 		},
-		Tokens: tokens,
+		Tokens:    tokens,
+		Functions: functions,
 	}
 }
