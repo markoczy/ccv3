@@ -16,10 +16,7 @@ func NewParamNode(identifier string) *ParamNode {
 //* Node interface:
 
 func (n *ParamNode) Value() (float64, error) {
-	if n.node == nil {
-		return 0, fmt.Errorf("Called Value() on empty ParamNode %s", n.identifier)
-	}
-	return n.Value()
+	return 0, fmt.Errorf("Unresolved parameter '%s'", n.identifier)
 }
 
 func (n *ParamNode) String() string {
