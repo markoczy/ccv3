@@ -6,11 +6,7 @@ import (
 	"github.com/markoczy/ccv3/parser"
 )
 
-var EndState = &ParserState{
-	End:        true,
-	Func:       NoOp,
-	Transition: NoTransition,
-}
+var EndState ParserState = &endState{}
 
 func NoOp(*CallStack) error {
 	return nil
@@ -29,4 +25,34 @@ func TokenMapTransition(transitions map[parser.TokenType]int) func(s *CallStack)
 		}
 		return next, nil
 	}
+}
+
+func NewParserState(exec func(*CallStack) (int, error)) ParserState {
+	return &defaultParserState{
+		exec: exec,
+	}
+}
+
+func NewParserStateWithExecAndTransitionFunc(exec func(*CallStack) error, transition func(*CallStack) (int, error)) ParserState {
+	return &defaultParserState{
+		exec: func(stack *CallStack) (ret int, err error) {
+			if err = exec(stack); err != nil {
+				return
+			}
+			ret, err = transition(stack)
+			return
+		},
+	}
+}
+
+func NewParserStateWithExecAndTransitionMap(exec func(*CallStack) error, transitions map[parser.TokenType]int) ParserState {
+	var transition = TokenMapTransition(transitions)
+	return &defaultParserState{
+		exec: func(stack *CallStack) (ret int, err error) {
+			if err = exec(stack); err != nil {
+				return
+			}
+			ret, err = transition(stack)
+			return
+		}}
 }

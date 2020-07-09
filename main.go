@@ -61,15 +61,15 @@ func testRuneQueue() {
 }
 
 var parserFsm = fsm.NewParserFsm(
-	map[int]*fsm.ParserState{
+	map[int]fsm.ParserState{
 		// Init
-		initStateId: fsm.NewParserState(false,
+		initStateId: fsm.NewParserStateWithExecAndTransitionMap(
 			fsm.NoOp,
-			fsm.TokenMapTransition(map[parser.TokenType]int{
+			map[parser.TokenType]int{
 				parser.NumericToken: parseNumericStateId,
-			})),
+			}),
 		// Parse Numeric
-		parseNumericStateId: fsm.NewParserState(false,
+		parseNumericStateId: fsm.NewParserStateWithExecAndTransitionMap(
 			func(s *fsm.CallStack) error {
 				state := s.Cur()
 				token := s.Tokens.Dequeue()
@@ -81,12 +81,12 @@ var parserFsm = fsm.NewParserFsm(
 				state.Equation.AddChild(&n)
 				return nil
 			},
-			fsm.TokenMapTransition(map[parser.TokenType]int{
+			map[parser.TokenType]int{
 				parser.EndToken:      endStateId,
 				parser.OperatorToken: parseOperatorStateId,
-			})),
+			}),
 		// Parse Operator
-		parseOperatorStateId: fsm.NewParserState(false,
+		parseOperatorStateId: fsm.NewParserStateWithExecAndTransitionMap(
 			func(s *fsm.CallStack) error {
 				state := s.Cur()
 				token := s.Tokens.Dequeue()
@@ -109,9 +109,9 @@ var parserFsm = fsm.NewParserFsm(
 				state.Equation.AddOperation(op)
 				return nil
 			},
-			fsm.TokenMapTransition(map[parser.TokenType]int{
+			map[parser.TokenType]int{
 				parser.NumericToken: parseNumericStateId,
-			})),
+			}),
 		// End
 		endStateId: fsm.EndState,
 	},
@@ -127,20 +127,24 @@ const (
 	// advanced
 	parseControlStateId       = 10
 	parseUnaryOperatorStateId = 11
+	// da reeel stuff
+	parseIdentifierStateId = 20
+	parseParamStateId      = 21
+	postParseParamStateId  = 22
 )
 
 var parserFsm2 = fsm.NewParserFsm(
-	map[int]*fsm.ParserState{
+	map[int]fsm.ParserState{
 		// Init
-		initStateId: fsm.NewParserState(false,
+		initStateId: fsm.NewParserStateWithExecAndTransitionMap(
 			fsm.NoOp,
-			fsm.TokenMapTransition(map[parser.TokenType]int{
+			map[parser.TokenType]int{
 				parser.NumericToken:  parseNumericStateId,
 				parser.ControlToken:  parseControlStateId,
 				parser.OperatorToken: parseUnaryOperatorStateId,
-			})),
+			}),
 		// Parse Numeric
-		parseNumericStateId: fsm.NewParserState(false,
+		parseNumericStateId: fsm.NewParserStateWithExecAndTransitionMap(
 			func(s *fsm.CallStack) error {
 				state := s.Cur()
 				token := s.Tokens.Dequeue()
@@ -156,13 +160,13 @@ var parserFsm2 = fsm.NewParserFsm(
 				state.Equation.AddChild(&n)
 				return nil
 			},
-			fsm.TokenMapTransition(map[parser.TokenType]int{
+			map[parser.TokenType]int{
 				parser.EndToken:      endStateId,
 				parser.OperatorToken: parseOperatorStateId,
 				parser.ControlToken:  parseControlStateId,
-			})),
+			}),
 		// Parse Operator
-		parseOperatorStateId: fsm.NewParserState(false,
+		parseOperatorStateId: fsm.NewParserStateWithExecAndTransitionMap(
 			func(s *fsm.CallStack) error {
 				state := s.Cur()
 				token := s.Tokens.Dequeue()
@@ -184,13 +188,13 @@ var parserFsm2 = fsm.NewParserFsm(
 				state.Equation.AddOperation(op)
 				return nil
 			},
-			fsm.TokenMapTransition(map[parser.TokenType]int{
+			map[parser.TokenType]int{
 				parser.NumericToken:  parseNumericStateId,
 				parser.ControlToken:  parseControlStateId,
 				parser.OperatorToken: parseUnaryOperatorStateId,
-			})),
+			}),
 		// Parse Control
-		parseControlStateId: fsm.NewParserState(false,
+		parseControlStateId: fsm.NewParserStateWithExecAndTransitionMap(
 			func(s *fsm.CallStack) error {
 				token := s.Tokens.Dequeue()
 
@@ -208,13 +212,13 @@ var parserFsm2 = fsm.NewParserFsm(
 				}
 				return nil
 			},
-			fsm.TokenMapTransition(map[parser.TokenType]int{
+			map[parser.TokenType]int{
 				parser.NumericToken:  parseNumericStateId,
 				parser.OperatorToken: parseOperatorStateId,
 				parser.EndToken:      endStateId,
 				parser.ControlToken:  parseControlStateId,
-			})),
-		parseUnaryOperatorStateId: fsm.NewParserState(false,
+			}),
+		parseUnaryOperatorStateId: fsm.NewParserStateWithExecAndTransitionMap(
 			func(s *fsm.CallStack) error {
 				state := s.Cur()
 				token := s.Tokens.Dequeue()
@@ -227,10 +231,22 @@ var parserFsm2 = fsm.NewParserFsm(
 				}
 				return nil
 			},
-			fsm.TokenMapTransition(map[parser.TokenType]int{
+			map[parser.TokenType]int{
 				parser.NumericToken: parseNumericStateId,
 				parser.ControlToken: parseControlStateId,
-			})),
+			}),
+		parseIdentifierStateId: fsm.NewParserState(func(stack *fsm.CallStack) (next int, err error) {
+			token := stack.Tokens.Dequeue()
+			fn, err := stack.Functions.Function(token.Value)
+			if err != nil {
+				return 0, err
+			}
+			if !fn.Parametrized() {
+
+			}
+			// id := stack.Functions.
+			return
+		}),
 		// End
 		endStateId: fsm.EndState,
 	},

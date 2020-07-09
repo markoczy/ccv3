@@ -4,6 +4,14 @@ import "fmt"
 
 type FunctionMap map[string]Function
 
+func (fm *FunctionMap) Function(id string) (Function, error) {
+	ret := (*fm)[id]
+	if ret == nil {
+		return nil, fmt.Errorf("Undefined function or parameter '%s'", id)
+	}
+	return ret, nil
+}
+
 func (fm *FunctionMap) Parametrized(id string) bool {
 	fn := (*fm)[id]
 	if fn == nil {

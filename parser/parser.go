@@ -39,4 +39,4 @@ func IsIdentifier(r rune) bool {
 }
 
 var IsOperator = IsOneOf('+', '-', '/', '*', '^')
-var IsControl = IsOneOf('(', ')')
+var IsControl = IsOneOf('(', ')', ',')

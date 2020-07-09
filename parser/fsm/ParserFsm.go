@@ -9,17 +9,17 @@ import (
 )
 
 type ParserFsm struct {
-	States map[int]*ParserState
-	State  *ParserState
+	States map[int]ParserState
+	State  ParserState
 	Stack  *CallStack
 }
 
 func (fsm *ParserFsm) End() bool {
-	return fsm.State.End
+	return fsm.State.End()
 }
 
 func (fsm *ParserFsm) Step() error {
-	if fsm.State.End {
+	if fsm.State.End() {
 		return nil
 	}
 
@@ -28,13 +28,7 @@ func (fsm *ParserFsm) Step() error {
 		return fmt.Errorf("No more tokens and not at end state")
 	}
 
-	token := stack.Tokens.Peek()
-	err := fsm.State.Func(fsm.Stack)
-	if err != nil {
-		return fsm.formatParserError(err, token)
-	}
-
-	next, err := fsm.State.Transition(fsm.Stack)
+	next, err := fsm.State.Exec(fsm.Stack)
 	if err != nil {
 		return fsm.formatParserError(err, stack.Tokens.Peek())
 	}
@@ -69,7 +63,7 @@ func (fsm *ParserFsm) formatParserError(err error, token *parser.Token) error {
 	return fmt.Errorf("Parser Error: %w (token '%s', position %d-%d)", err, token.Value, token.Begin, token.End)
 }
 
-func NewParserFsm(states map[int]*ParserState, start int) *ParserFsm {
+func NewParserFsm(states map[int]ParserState, start int) *ParserFsm {
 	return &ParserFsm{
 		States: states,
 		State:  states[start],
